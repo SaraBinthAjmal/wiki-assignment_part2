@@ -6,8 +6,7 @@ RUN apk add --no-cache bash curl git wget tar gzip
 
 # Install k3d
 RUN wget -q -O /usr/local/bin/k3d https://github.com/k3d-io/k3d/releases/download/v5.7.0/k3d-linux-amd64 \
-    && chmod +x /usr/local/bin/k3d
-
+    && chmod +x /usr/local/bin/k3d 
 
 # install kubectl
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \

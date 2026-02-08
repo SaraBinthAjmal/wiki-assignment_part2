@@ -4,7 +4,8 @@ metadata:
   name: wiki-ingress
 spec:
   rules:
-  - http:
+  - host: wiki.local
+    http:
       paths:
       - path: /users
         pathType: Prefix
