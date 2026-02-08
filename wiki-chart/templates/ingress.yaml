@@ -4,6 +4,7 @@ metadata:
   name: wiki-ingress
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
     - http:
@@ -15,6 +16,7 @@ spec:
                 name: fastapi
                 port:
                   number: 8000
+
           - path: /posts
             pathType: Prefix
             backend:
@@ -22,13 +24,7 @@ spec:
                 name: fastapi
                 port:
                   number: 8000
-          - path: /grafana
-            pathType: Prefix
-            backend:
-              service:
-                name: grafana
-                port:
-                  number: 3000
+
           - path: /metrics
             pathType: Prefix
             backend:
@@ -36,3 +32,11 @@ spec:
                 name: fastapi
                 port:
                   number: 8000
+
+          - path: /grafana
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: 3000
