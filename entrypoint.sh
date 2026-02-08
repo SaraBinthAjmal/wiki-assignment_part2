@@ -1,41 +1,29 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
-# Start Docker-in-Docker
-dockerd &
+echo "Starting Docker daemon..."
+dockerd-entrypoint.sh &
 
-# Wait for dockerd
-while(! docker info > /dev/null 2>&1); do
-    echo "Waiting for Docker..."
-    sleep 2
+# Wait for Docker
+until docker info >/dev/null 2>&1; do
+  sleep 1
 done
+
 echo "Docker is ready"
 
-# Create k3d cluster with port 8080 mapped
+# Create k3d cluster (IMPORTANT: no host port binding)
 k3d cluster create wiki-cluster \
-    --agents 1 \
-    --port "8080:80@loadbalancer" \
-    --wait
+  --agents 1 \
+  -p "8080:80@loadbalancer" \
+  --k3s-arg "--disable=traefik@server:*"
 
-# Build and load FastAPI image into k3d
-docker build -t wiki-service:latest ./wiki-service
-k3d image import wiki-service:latest -c wiki-cluster
+export KUBECONFIG="$(k3d kubeconfig write wiki-cluster)"
 
-# Configure kubeconfig
-export KUBECONFIG=$(k3d kubeconfig get wiki-cluster)
+# Wait for cluster
+kubectl wait --for=condition=Ready node --all --timeout=120s
 
-# Install Helm chart
-helm install wiki ./wiki-chart --set fastapi.image_name=wiki-service:latest
+# Deploy Helm chart
+helm upgrade --install wiki ./wiki-chart
 
-# Wait for FastAPI pod to be running
-echo "Waiting for FastAPI pod..."
-kubectl wait --for=condition=Ready pod -l app=fastapi --timeout=120s
-
-# Pre-hit FastAPI endpoints to generate metrics
-echo "Seeding metrics..."
-curl -s http://localhost:8080/users > /dev/null
-curl -s http://localhost:8080/posts > /dev/null
-
-# Keep container alive
-echo "Cluster is running. Services available on port 8080."
+echo "Cluster is up. Holding container..."
 tail -f /dev/null

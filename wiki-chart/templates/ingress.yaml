@@ -2,29 +2,37 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: wiki-ingress
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   rules:
-  - host: wiki.local
-    http:
-      paths:
-      - path: /users
-        pathType: Prefix
-        backend:
-          service:
-            name: fastapi
-            port:
-              number: 8000
-      - path: /posts
-        pathType: Prefix
-        backend:
-          service:
-            name: fastapi
-            port:
-              number: 8000
-      - path: /grafana
-        pathType: Prefix
-        backend:
-          service:
-            name: grafana
-            port:
-              number: 3000
+    - http:
+        paths:
+          - path: /users
+            pathType: Prefix
+            backend:
+              service:
+                name: fastapi
+                port:
+                  number: 8000
+          - path: /posts
+            pathType: Prefix
+            backend:
+              service:
+                name: fastapi
+                port:
+                  number: 8000
+          - path: /grafana
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: 3000
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: fastapi
+                port:
+                  number: 8000
